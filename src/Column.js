@@ -17,7 +17,11 @@ const Title = styled.div`
 `;
 
 const TaskList = styled.div`
+  min-height: calc(100% - 79px);
   padding: 20px;
+  background: ${({ isDraggingOver }) =>
+    isDraggingOver ? 'lightcyan' : 'white'};
+  transition: 0.3s;
 `;
 
 export function Column({ column, tasks }) {
@@ -25,8 +29,12 @@ export function Column({ column, tasks }) {
     <Container>
       <Title>{column.title}</Title>
       <Droppable droppableId={column.id}>
-        {provided => (
-          <TaskList ref={provided.innerRef} {...provided.droppableProps}>
+        {(provided, snapshot) => (
+          <TaskList
+            ref={provided.innerRef}
+            isDraggingOver={snapshot.isDraggingOver}
+            {...provided.droppableProps}
+          >
             {tasks.map((task, index) => (
               <Task
                 key={task.id}

@@ -4,10 +4,10 @@ import { DragDropContext } from 'react-beautiful-dnd';
 import { Column } from './Column';
 import { initialData } from './constants';
 
-const Wrapper = styled(DragDropContext)`
+const Wrapper = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: 1fr;
   grid-gap: 30px 20px;
   height: calc(100vh - 40px);
   margin: 20px;
@@ -25,21 +25,51 @@ class App extends Component {
       return;
     }
 
-    const column = this.state.columns[source.droppableId];
-    const newTaskIds = Array.from(column.taskIds);
-    newTaskIds.splice(source.index, 1);
-    newTaskIds.splice(destination.index, 0, draggableId);
+    const startColumn = this.state.columns[source.droppableId];
+    const finishColumn = this.state.columns[destination.droppableId];
 
-    const newColummn = {
-      ...column,
-      taskIds: newTaskIds,
+    if (startColumn === finishColumn) {
+      const newTaskIds = Array.from(startColumn.taskIds);
+      newTaskIds.splice(source.index, 1);
+      newTaskIds.splice(destination.index, 0, draggableId);
+
+      const newColummn = {
+        ...startColumn,
+        taskIds: newTaskIds,
+      };
+
+      const newState = {
+        ...this.state,
+        columns: {
+          ...this.state.columns,
+          [newColummn.id]: newColummn,
+        },
+      };
+
+      this.setState(newState);
+      return;
+    }
+
+    const startColumnTaskIds = Array.from(startColumn.taskIds);
+    startColumnTaskIds.splice(source.index, 1);
+    const newStartColumn = {
+      ...startColumn,
+      taskIds: startColumnTaskIds,
+    };
+
+    const finishColumnTaskIds = Array.from(finishColumn.taskIds);
+    finishColumnTaskIds.splice(destination.index, 0, draggableId);
+    const newFinishColumn = {
+      ...finishColumn,
+      taskIds: finishColumnTaskIds,
     };
 
     const newState = {
       ...this.state,
       columns: {
         ...this.state.columns,
-        [newColummn.id]: newColummn,
+        [newStartColumn.id]: newStartColumn,
+        [newFinishColumn.id]: newFinishColumn,
       },
     };
 
@@ -48,13 +78,17 @@ class App extends Component {
 
   render() {
     return (
-      <Wrapper onDragEnd={this.onDragEnd}>
-        {this.state.columnOrder.map(columnId => {
-          const column = this.state.columns[columnId];
-          const tasks = column.taskIds.map(taskId => this.state.tasks[taskId]);
-          return <Column key={column.id} column={column} tasks={tasks} />;
-        })}
-      </Wrapper>
+      <DragDropContext onDragEnd={this.onDragEnd}>
+        <Wrapper>
+          {this.state.columnOrder.map(columnId => {
+            const column = this.state.columns[columnId];
+            const tasks = column.taskIds.map(
+              taskId => this.state.tasks[taskId]
+            );
+            return <Column key={column.id} column={column} tasks={tasks} />;
+          })}
+        </Wrapper>
+      </DragDropContext>
     );
   }
 }
