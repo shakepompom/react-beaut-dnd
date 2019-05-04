@@ -10,6 +10,7 @@ const Wrapper = styled.div`
   background: ${({ isDragging }) => (isDragging ? 'lemonchiffon' : 'white')};
   border: 1px solid lightgray;
   border-radius: 2px;
+  transition: 0.3s;
 `;
 
 const Handle = styled.div`
